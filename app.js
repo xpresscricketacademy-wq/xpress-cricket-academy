@@ -7,11 +7,47 @@ let performance=JSON.parse(localStorage.getItem("xpress_performance")||"{}");
 let activeParent=null;
 let currentRole="coach";
 const savePlayers=()=>localStorage.setItem("xpress_players",JSON.stringify(players));
-function login(){const role=$("#role").value,pass=$("#passcode").value;if(role==="coach"&&pass==="1234"){currentRole="coach";activeParent=null;}
-else if(role==="parent"){const acct=parentAccounts.find(a=>a.password===pass);if(acct){currentRole="parent";activeParent=acct;}else if(pass==="1111"&&parentAccounts.length===0){currentRole="parent";activeParent=null;}else{$("#login-error").textContent="Parent login not found. Ask the coach to create your account.";return;}}
-else {$("#login-error").textContent="Incorrect demo passcode. Please try again.";return;}
-{$("#login-screen").classList.add("hidden");$("#app").classList.remove("hidden");$("#role-label").textContent=currentRole==="coach"?"Coach / Admin":"Parent";
-document.querySelectorAll('[data-page="parent-accounts"]').forEach(el=>el.classList.toggle("hidden",currentRole!=="coach"));document.querySelectorAll(".coach-only").forEach(el=>el.classList.toggle("hidden",role!=="coach"));render();}else{$("#login-error").textContent="Incorrect demo passcode. Please try again.";}}
+
+function login() {
+  const role = $("#role").value;
+  const pass = $("#passcode").value;
+
+  if (role === "coach" && pass === "1234") {
+    currentRole = "coach";
+    activeParent = null;
+  } else if (role === "parent") {
+    const acct = parentAccounts.find(a => a.password === pass);
+
+    if (acct) {
+      currentRole = "parent";
+      activeParent = acct;
+    } else if (pass === "1111" && parentAccounts.length === 0) {
+      currentRole = "parent";
+      activeParent = null;
+    } else {
+      $("#login-error").textContent = "Parent login not found.";
+      return;
+    }
+  } else {
+    $("#login-error").textContent = "Incorrect demo passcode.";
+    return;
+  }
+
+  $("#login-error").textContent = "";
+  $("#login-screen").classList.add("hidden");
+  $("#app").classList.remove("hidden");
+  $("#role-label").textContent =
+    currentRole === "coach" ? "Coach / Admin" : "Parent";
+
+  document.querySelectorAll('[data-page="parent-accounts"]')
+    .forEach(el => el.classList.toggle("hidden", currentRole !== "coach"));
+
+  document.querySelectorAll(".coach-only")
+    .forEach(el => el.classList.toggle("hidden", currentRole !== "coach"));
+
+  render();
+}
+
 $("#login-btn").addEventListener("click",login);$("#passcode").addEventListener("keydown",e=>{if(e.key==="Enter")login()});
 $("#logout-btn").addEventListener("click",()=>{$("#app").classList.add("hidden");$("#login-screen").classList.remove("hidden");$("#passcode").value="";});
 document.querySelectorAll(".nav-item").forEach(btn=>btn.addEventListener("click",()=>showPage(btn.dataset.page)));
