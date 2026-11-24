@@ -1,111 +1,55 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#111111">
-  <meta name="description" content="Xpress Cricket Academy player and academy management app">
-  <link rel="manifest" href="manifest.webmanifest">
-  <link rel="icon" href="icons/icon-192.png">
-  <link rel="stylesheet" href="styles.css">
-  <title>Xpress Cricket Academy</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#111111"><meta name="description" content="Xpress Cricket Academy player and academy management app">
+<link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="stylesheet" href="styles.css">
+<title>Xpress Cricket Academy</title>
 </head>
 <body>
-  <div id="login-screen" class="login-wrap">
-    <div class="login-card">
-      <div class="brand-mark"><img src="assets/xpress-logo.png" alt="Xpress logo" onerror="this.style.display='none'"><span>🏏</span></div>
-      <p class="eyebrow">ONE TEAM, ONE DREAM</p>
-      <h1>XPRESS CRICKET<br><em>ACADEMY</em></h1>
-      <p class="muted">Academy Management</p>
-      <label for="role">Login as</label>
-      <select id="role"><option value="coach">Coach / Admin</option><option value="parent">Parent</option></select>
-      <label for="passcode">Demo passcode</label>
-      <input id="passcode" type="password" placeholder="Enter demo passcode" autocomplete="current-password">
-      <button id="login-btn" class="primary">Login</button>
-      <p class="hint">Demo access: Coach <b>1234</b> · Parent <b>1111</b></p>
-      <p id="login-error" class="error" aria-live="polite"></p>
-    </div>
-  </div>
-
-  <div id="app" class="app hidden">
-    <aside class="sidebar">
-      <div class="side-brand"><div class="mini-logo">🏏</div><div><b>XPRESS</b><small>CRICKET ACADEMY</small></div></div>
-      <nav id="side-nav">
-        <button data-page="dashboard" class="nav-item active">▦ <span>Dashboard</span></button>
-        <button data-page="players" class="nav-item">♙ <span>Players</span></button>
-        <button data-page="attendance" class="nav-item">✓ <span>Attendance</span></button>
-        <button data-page="matches" class="nav-item">🏆 <span>Matches</span></button>
-        <button data-page="performance" class="nav-item">↗ <span>Performance</span></button>
-      </nav>
-      <button id="logout-btn" class="logout">↪ Logout</button>
-    </aside>
-
-    <main class="main">
-      <header class="topbar">
-        <div><p class="eyebrow">WELCOME TO YOUR ACADEMY</p><h2 id="page-title">Dashboard</h2></div>
-        <div class="user-pill"><span class="online-dot"></span><span id="role-label">Coach / Admin</span></div>
-      </header>
-      <section id="dashboard-page" class="page">
-        <div class="hero">
-          <div><p class="eyebrow">ONE TEAM, ONE DREAM</p><h2>Train hard.<br><em>Play smart.</em></h2><p>Every player. Every practice. Every achievement.</p></div>
-          <div class="hero-ball">🏏</div>
-        </div>
-        <div class="stats">
-          <article class="stat"><span>Total Players</span><strong id="total-players">0</strong><small>Registered players</small></article>
-          <article class="stat"><span>Age Groups</span><strong>5</strong><small>U10 to U19</small></article>
-          <article class="stat"><span>Today's Attendance</span><strong id="today-count">0</strong><small>Marked present</small></article>
-        </div>
-        <div class="section-head"><div><p class="eyebrow">ACADEMY ROSTER</p><h3>Age Groups</h3></div></div>
-        <div id="group-cards" class="group-grid"></div>
-        <div class="notice"><b>Getting started</b><p>Add your players from the Players section. This starter version stores demo data on this device only.</p></div>
-      </section>
-
-      <section id="players-page" class="page hidden">
-        <div class="section-head"><div><p class="eyebrow">PLAYER DIRECTORY</p><h3>Academy Players</h3></div><button id="add-player-open" class="primary coach-only">+ Add Player</button></div>
-        <div class="notice coach-only">
-          <b>Bulk Player Upload</b>
-          <p>Select the prepared player-name text file, then import all names together. Age group and DOB can be added later.</p>
-          <input id="bulk-player-file" type="file" accept=".txt,.csv,text/plain,text/csv">
-          <button id="bulk-upload-btn" class="primary" type="button">Import Players</button>
-          <p id="bulk-upload-message" class="success" aria-live="polite"></p>
-        </div>
-        <div class="toolbar"><input id="player-search" placeholder="Search player name..."><select id="group-filter"><option value="">All age groups</option><option>Under 10</option><option>Under 12</option><option>Under 14</option><option>Under 16</option><option>Under 19</option></select></div>
-        <div class="table-wrap"><table><thead><tr><th>Player</th><th>Age group</th><th>Jersey No.</th><th>Parent contact</th><th class="coach-only">Action</th></tr></thead><tbody id="player-rows"></tbody></table></div>
-        <p id="empty-players" class="empty">No players added yet. Select “Add Player” to begin.</p>
-      </section>
-
-      <section id="attendance-page" class="page hidden">
-        <div class="section-head"><div><p class="eyebrow">DAILY TRAINING</p><h3>Attendance</h3></div></div>
-        <div class="toolbar"><input id="attendance-date" type="date"><select id="attendance-group"><option value="">All age groups</option><option>Under 10</option><option>Under 12</option><option>Under 14</option><option>Under 16</option><option>Under 19</option></select></div>
-        <div id="attendance-list" class="attendance-list"></div>
-        <button id="save-attendance" class="primary coach-only">Save Attendance</button>
-        <p id="attendance-message" class="success"></p>
-      </section>
-
-      <section id="matches-page" class="page hidden">
-        <div class="section-head"><div><p class="eyebrow">FIXTURES & RESULTS</p><h3>Matches</h3></div></div>
-        <div class="notice"><b>Match centre</b><p>Use this space to keep upcoming fixtures, results and team announcements. Match scheduling will be added in the next version.</p></div>
-        <div class="match-card"><span class="match-icon">🏆</span><div><b>Xpress Cricket Academy</b><small>One Team, One Dream</small></div><span class="tag">Academy</span></div>
-      </section>
-
-      <section id="performance-page" class="page hidden">
-        <div class="section-head"><div><p class="eyebrow">PLAYER DEVELOPMENT</p><h3>Performance</h3></div></div>
-        <div class="notice"><b>Performance tracking</b><p>Player batting, bowling, fielding and fitness records can be added here. This starter app provides the player roster and attendance foundation first.</p></div>
-        <div class="performance-grid"><div class="performance-tile">🏏<b>Batting</b><small>Runs · Average · Strike rate</small></div><div class="performance-tile">🎯<b>Bowling</b><small>Wickets · Economy · Average</small></div><div class="performance-tile">⚡<b>Fitness</b><small>Speed · Agility · Endurance</small></div></div>
-      </section>
-    </main>
-  </div>
-
-  <dialog id="player-dialog">
-    <form id="player-form" method="dialog">
-      <div class="dialog-head"><div><p class="eyebrow">ACADEMY ROSTER</p><h3>Add New Player</h3></div><button type="button" id="close-dialog" class="close">×</button></div>
-      <label>Player name *</label><input id="new-name" required maxlength="60" placeholder="Enter full name">
-      <label>Age group *</label><select id="new-group" required><option value="">Select age group</option><option>Under 10</option><option>Under 12</option><option>Under 14</option><option>Under 16</option><option>Under 19</option></select>
-      <label>Jersey number</label><input id="new-jersey" type="number" min="0" max="999" placeholder="Optional">
-      <label>Parent contact</label><input id="new-contact" type="tel" maxlength="15" placeholder="Optional">
-      <button class="primary" type="submit">Save Player</button>
-    </form>
-  </dialog>
-  <script src="app.js"></script>
-</body>
-</html>
+<div id="login-screen" class="login-wrap"><div class="login-card">
+<div class="brand-mark"><img src="xpress-logo.png" alt="Xpress logo" onerror="this.style.display='none'"><span>🏏</span></div>
+<p class="eyebrow">ONE TEAM, ONE DREAM</p><h1>XPRESS CRICKET<br><em>ACADEMY</em></h1><p class="muted">Academy Management</p>
+<label for="role">Login as</label><select id="role"><option value="coach">Coach / Admin</option><option value="parent">Parent</option></select>
+<label for="passcode">Demo passcode</label><input id="passcode" type="password" placeholder="Enter demo passcode" autocomplete="current-password">
+<button id="login-btn" class="primary">Login</button><p class="hint">Demo access: Coach <b>1234</b> · Parent <b>1111</b></p><p id="login-error" class="error" aria-live="polite"></p>
+</div></div>
+<div id="app" class="app hidden">
+<aside class="sidebar"><div class="side-brand"><div class="mini-logo">🏏</div><div><b>XPRESS</b><small>CRICKET ACADEMY</small></div></div>
+<nav id="side-nav">
+<button data-page="dashboard" class="nav-item active">▦ <span>Dashboard</span></button>
+<button data-page="players" class="nav-item">♙ <span>Players</span></button>
+<button data-page="attendance" class="nav-item">✓ <span>Attendance</span></button>
+<button data-page="matches" class="nav-item">🏆 <span>Matches</span></button>
+<button data-page="performance" class="nav-item">↗ <span>Performance</span></button>
+<button data-page="parent-accounts" class="nav-item coach-only">♧ <span>Parent Accounts</span></button>
+</nav><button id="logout-btn" class="logout">↪ Logout</button></aside>
+<main class="main"><header class="topbar"><div><p class="eyebrow">WELCOME TO YOUR ACADEMY</p><h2 id="page-title">Dashboard</h2></div><div class="user-pill"><span class="online-dot"></span><span id="role-label">Coach / Admin</span></div></header>
+<section id="dashboard-page" class="page">
+<div class="hero"><div><p class="eyebrow">ONE TEAM, ONE DREAM</p><h2>Train hard.<br><em>Play smart.</em></h2><p>Every player. Every practice. Every achievement.</p></div><div class="hero-ball">🏏</div></div>
+<div class="stats"><article class="stat"><span>Total Players</span><strong id="total-players">0</strong><small>Registered players</small></article><article class="stat"><span>Age Groups</span><strong>5</strong><small>U10 to U19</small></article><article class="stat"><span>Today's Attendance</span><strong id="today-count">0</strong><small>Marked present</small></article></div>
+<div class="section-head"><div><p class="eyebrow">ACADEMY ROSTER</p><h3>Age Groups</h3></div></div><div id="group-cards" class="group-grid"></div>
+<div class="notice"><b>Getting started</b><p>Add players from the Players section. This starter version stores demo data on this device only.</p></div>
+</section>
+<section id="players-page" class="page hidden">
+<div class="section-head"><div><p class="eyebrow">PLAYER DIRECTORY</p><h3>Academy Players</h3></div><button id="add-player-open" class="primary coach-only">+ Add Player</button></div>
+<div class="notice coach-only"><b>Bulk add players</b><p>1. Select the TXT file with one player name per line. 2. Press Import Players. Age group and DOB can be added later.</p>
+<input id="bulk-player-file" type="file" accept=".txt,text/plain">
+<button id="bulk-upload-btn" class="primary" type="button">Import Players</button>
+<p id="bulk-player-message" class="success" aria-live="polite"></p></div>
+<div class="toolbar"><input id="player-search" placeholder="Search player name..."><select id="group-filter"><option value="">All age groups</option><option>Under 10</option><option>Under 12</option><option>Under 14</option><option>Under 16</option><option>Under 19</option></select></div>
+<div class="table-wrap"><table><thead><tr><th>Player</th><th>Age group</th><th>Jersey No.</th><th>Parent contact</th><th class="coach-only">Action</th></tr></thead><tbody id="player-rows"></tbody></table></div>
+<p id="empty-players" class="empty">No players added yet. Use Bulk add players or Add Player.</p>
+</section>
+<section id="attendance-page" class="page hidden"><div class="section-head"><div><p class="eyebrow">DAILY TRAINING</p><h3>Attendance</h3></div></div>
+<div class="toolbar"><input id="attendance-date" type="date"><select id="attendance-group"><option value="">All age groups</option><option>Under 10</option><option>Under 12</option><option>Under 14</option><option>Under 16</option><option>Under 19</option></select></div>
+<div id="attendance-list" class="attendance-list"></div><button id="save-attendance" class="primary coach-only">Save Attendance</button><p id="attendance-message" class="success"></p></section>
+<section id="matches-page" class="page hidden"><div class="section-head"><div><p class="eyebrow">FIXTURES & RESULTS</p><h3>Matches</h3></div></div><div class="notice"><b>Match centre</b><p>Fixtures and results section.</p></div></section>
+<section id="parent-accounts-page" class="page hidden"><div class="section-head"><div><p class="eyebrow">FAMILY ACCESS</p><h3>Parent Accounts</h3></div></div><div class="toolbar"><select id="parent-player"></select><input id="parent-name" placeholder="Parent name"><input id="parent-mobile" placeholder="Mobile number"><input id="parent-pass" placeholder="Temporary password"></div><button id="create-parent" class="primary">Create Parent Account</button><table><tbody id="parent-rows"></tbody></table></section>
+<section id="performance-page" class="page hidden"><div class="section-head"><div><p class="eyebrow">PLAYER DEVELOPMENT</p><h3>Performance</h3></div></div><div class="toolbar coach-only"><select id="performance-player"></select><input id="runs-input" type="number" placeholder="Runs"><input id="wickets-input" type="number" placeholder="Wickets"><button id="save-performance" class="primary">Save figures</button></div><div id="performance-records" class="table-wrap"></div></section>
+</main></div>
+<dialog id="player-dialog"><form id="player-form" method="dialog"><div class="dialog-head"><div><p class="eyebrow">ACADEMY ROSTER</p><h3>Add New Player</h3></div><button type="button" id="close-dialog" class="close">×</button></div>
+<label>Player name *</label><input id="new-name" required maxlength="60" placeholder="Enter full name"><label>Age group</label><select id="new-group"><option value="">Not assigned yet</option><option>Under 10</option><option>Under 12</option><option>Under 14</option><option>Under 16</option><option>Under 19</option></select>
+<label>Jersey number</label><input id="new-jersey" type="number" min="0" max="999"><label>Parent contact</label><input id="new-contact" type="tel"><button class="primary" type="submit">Save Player</button></form></dialog>
+<script src="app.js?v=1.6"></script>
+</body></html>
