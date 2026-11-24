@@ -3,7 +3,9 @@ const GROUPS = ["Under 10", "Under 12", "Under 14", "Under 16", "Under 19"];
 
 let players = JSON.parse(localStorage.getItem("xpress_players") || "[]");
 let attendance = JSON.parse(localStorage.getItem("xpress_attendance") || "{}");
+let parentAccounts = JSON.parse(localStorage.getItem("xpress_parent_accounts") || "[]");
 let performance = JSON.parse(localStorage.getItem("xpress_performance") || "{}");
+let activeParent = null;
 let currentRole = "coach";
 
 const savePlayers = () => localStorage.setItem("xpress_players", JSON.stringify(players));
@@ -11,7 +13,7 @@ const savePlayers = () => localStorage.setItem("xpress_players", JSON.stringify(
 // Supabase configuration for Xpress Cricket Academy.
 const SUPABASE_URL = "https://ayrixcmsfkxqweizwlyv.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_s3JLAtdLjX6q0X_PGoTb2Q_V2xy91G9";
-const COACH_EMAIL = "xpressacademy@gmail.com";
+const COACH_EMAIL = "xpresscricketacademy@gmail.com";
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let authUser = null;
 let cloudStudent = null;
@@ -63,11 +65,7 @@ async function login() {
       .from("Students").select("*").eq("parent_user_id", authUser.id).limit(1);
     if (rowError) return showAuthError("Could not load registration: " + rowError.message);
     cloudStudent = rows && rows[0] ? rows[0] : null;
-    if (!cloudStudent) {
-      await supabase.auth.signOut();
-      authUser = null;
-      return showAuthError("No child registration found for this account. Please register first.");
-    }
+    if (!cloudStudent) return showAuthError("No child registration found for this account. Please register first.");
     if (String(cloudStudent.Approval_status).toLowerCase() !== "approved") {
       await supabase.auth.signOut();
       authUser = null;
@@ -107,11 +105,7 @@ $("#register-btn").addEventListener("click", async () => {
     const ext = (photo.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "");
     photoPath = `${data.user.id}/${Date.now()}.${ext}`;
     const { error: uploadError } = await supabase.storage.from("student-photos").upload(photoPath, photo, { upsert: false });
-    if (uploadError) {
-        await supabase.auth.signOut();
-        authUser = null;
-        return showAuthError("Account created, but photo upload failed: " + uploadError.message);
-      }
+    if (uploadError) return showAuthError("Account created, but photo upload failed: " + uploadError.message);
   }
   const payload = {
     parent_user_id: data.user.id,
@@ -130,7 +124,7 @@ $("#register-btn").addEventListener("click", async () => {
 });
 $("#logout-btn").addEventListener("click", async () => {
   await supabase.auth.signOut();
-  authUser = null; cloudStudent = null;
+  authUser = null; cloudStudent = null; activeParent = null;
   $("#app").classList.add("hidden");
   $("#login-screen").classList.remove("hidden");
   $("#auth-password").value = "";
@@ -184,6 +178,7 @@ function showPage(page) {
   $("#page-title").textContent = page[0].toUpperCase() + page.slice(1);
   if (page === "players") renderPlayers();
   if (page === "attendance") renderAttendance();
+  if (page === "parent-accounts") renderParentAccounts();
   if (page === "approvals") loadApprovals();
   if (page === "performance") renderPerformance();
 }
@@ -282,7 +277,9 @@ if (bulkButton) {
 function renderPlayers() {
   const q = $("#player-search").value.toLowerCase();
   const g = $("#group-filter").value;
+  const allowed = currentRole === "parent" && activeParent ? [activeParent.playerId] : null;
   const list = players.filter(p =>
+    (!allowed || allowed.includes(p.id)) &&
     p.name.toLowerCase().includes(q) &&
     (!g || p.group === g)
   );
@@ -318,6 +315,7 @@ function renderAttendance() {
   const key = date + "|";
   const saved = attendance[key] || {};
   const list = players.filter(p =>
+    (currentRole !== "parent" || !activeParent || p.id === activeParent.playerId) &&
     (!g || p.group === g)
   );
   $("#attendance-list").innerHTML = list.length
@@ -350,8 +348,40 @@ if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
 }
 
+function renderParentAccounts() {
+  const sel = $("#parent-player");
+  if (!sel) return;
+  sel.innerHTML = players.map(p =>
+    `<option value="${p.id}">${escapeHtml(p.name)} (${escapeHtml(p.group || "Not assigned")})</option>`
+  ).join("");
+  $("#parent-rows").innerHTML = parentAccounts.map(a => {
+    const p = players.find(x => x.id === a.playerId);
+    return `<tr><td>${escapeHtml(a.name)}</td><td>${escapeHtml(a.mobile)}</td><td>${p ? escapeHtml(p.name) : "Player removed"}</td></tr>`;
+  }).join("");
+}
+
+$("#create-parent")?.addEventListener("click", () => {
+  const playerId = Number($("#parent-player").value);
+  const name = $("#parent-name").value.trim();
+  const mobile = $("#parent-mobile").value.trim();
+  const password = $("#parent-pass").value;
+  if (!playerId || !name || !mobile || password.length < 4) {
+    alert("Select a player and enter parent name, mobile and a password of at least 4 characters.");
+    return;
+  }
+  parentAccounts.push({ id: Date.now(), playerId, name, mobile, password });
+  localStorage.setItem("xpress_parent_accounts", JSON.stringify(parentAccounts));
+  $("#parent-name").value = "";
+  $("#parent-mobile").value = "";
+  $("#parent-pass").value = "";
+  renderParentAccounts();
+  alert("Demo parent account created. Login ID is the mobile number; demo login currently uses the password field.");
+});
+
 function renderPerformance() {
-  const ids = players.map(p => p.id);
+  const ids = currentRole === "parent" && activeParent
+    ? [activeParent.playerId]
+    : players.map(p => p.id);
   const records = ids.map(id => {
     const p = players.find(x => x.id === id);
     const v = performance[id] || {};

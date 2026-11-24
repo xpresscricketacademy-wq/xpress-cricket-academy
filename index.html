@@ -35,6 +35,7 @@
 <button data-page="attendance" class="nav-item">✓ <span>Attendance</span></button>
 <button data-page="matches" class="nav-item">🏆 <span>Matches</span></button>
 <button data-page="performance" class="nav-item">↗ <span>Performance</span></button>
+<button data-page="parent-accounts" class="nav-item coach-only">♧ <span>Parent Accounts</span></button>
 <button data-page="approvals" class="nav-item coach-only">✓ <span>Registrations</span></button>
 </nav><button id="logout-btn" class="logout">↪ Logout</button></aside>
 <main class="main"><header class="topbar"><div><p class="eyebrow">WELCOME TO YOUR ACADEMY</p><h2 id="page-title">Dashboard</h2></div><div class="user-pill"><span class="online-dot"></span><span id="role-label">Coach / Admin</span></div></header>
@@ -51,7 +52,7 @@
 <div class="hero"><div><p class="eyebrow">ONE TEAM, ONE DREAM</p><h2>Train hard.<br><em>Play smart.</em></h2><p>Every player. Every practice. Every achievement.</p></div><div class="hero-ball">🏏</div></div>
 <div class="stats"><article class="stat"><span>Total Players</span><strong id="total-players">0</strong><small>Registered players</small></article><article class="stat"><span>Age Groups</span><strong>5</strong><small>U10 to U19</small></article><article class="stat"><span>Today's Attendance</span><strong id="today-count">0</strong><small>Marked present</small></article></div>
 <div class="section-head"><div><p class="eyebrow">ACADEMY ROSTER</p><h3>Age Groups</h3></div></div><div id="group-cards" class="group-grid"></div>
-<div class="notice"><b>Getting started</b><p>Add players from the Players section. Parent registrations and approval status are managed through Supabase.</p></div>
+<div class="notice"><b>Getting started</b><p>Add players from the Players section. This starter version stores demo data on this device only.</p></div>
 </section>
 <section id="players-page" class="page hidden">
 <div class="section-head"><div><p class="eyebrow">PLAYER DIRECTORY</p><h3>Academy Players</h3></div><button id="add-player-open" class="primary coach-only">+ Add Player</button></div>
@@ -67,7 +68,7 @@
 <div class="toolbar"><input id="attendance-date" type="date"><select id="attendance-group"><option value="">All age groups</option><option>Under 10</option><option>Under 12</option><option>Under 14</option><option>Under 16</option><option>Under 19</option></select></div>
 <div id="attendance-list" class="attendance-list"></div><button id="save-attendance" class="primary coach-only">Save Attendance</button><p id="attendance-message" class="success"></p></section>
 <section id="matches-page" class="page hidden"><div class="section-head"><div><p class="eyebrow">FIXTURES & RESULTS</p><h3>Matches</h3></div></div><div class="notice"><b>Match centre</b><p>Fixtures and results section.</p></div></section>
-
+<section id="parent-accounts-page" class="page hidden"><div class="section-head"><div><p class="eyebrow">FAMILY ACCESS</p><h3>Parent Accounts</h3></div></div><div class="toolbar"><select id="parent-player"></select><input id="parent-name" placeholder="Parent name"><input id="parent-mobile" placeholder="Mobile number"><input id="parent-pass" placeholder="Temporary password"></div><button id="create-parent" class="primary">Create Parent Account</button><table><tbody id="parent-rows"></tbody></table></section>
 <section id="performance-page" class="page hidden"><div class="section-head"><div><p class="eyebrow">PLAYER DEVELOPMENT</p><h3>Performance</h3></div></div><div class="toolbar coach-only"><select id="performance-player"></select><input id="runs-input" type="number" placeholder="Runs"><input id="wickets-input" type="number" placeholder="Wickets"><button id="save-performance" class="primary">Save figures</button></div><div id="performance-records" class="table-wrap"></div></section>
 </main></div>
 <dialog id="player-dialog"><form id="player-form" method="dialog"><div class="dialog-head"><div><p class="eyebrow">ACADEMY ROSTER</p><h3>Add New Player</h3></div><button type="button" id="close-dialog" class="close">×</button></div>
