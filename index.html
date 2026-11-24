@@ -36,7 +36,6 @@
         <button data-page="attendance" class="nav-item">✓ <span>Attendance</span></button>
         <button data-page="matches" class="nav-item">🏆 <span>Matches</span></button>
         <button data-page="performance" class="nav-item">↗ <span>Performance</span></button>
-        <button data-page="parent-accounts" class="nav-item coach-only">♧ <span>Parent Accounts</span></button>
       </nav>
       <button id="logout-btn" class="logout">↪ Logout</button>
     </aside>
@@ -63,6 +62,13 @@
 
       <section id="players-page" class="page hidden">
         <div class="section-head"><div><p class="eyebrow">PLAYER DIRECTORY</p><h3>Academy Players</h3></div><button id="add-player-open" class="primary coach-only">+ Add Player</button></div>
+        <div class="notice coach-only">
+          <b>Bulk Player Upload</b>
+          <p>Select the prepared player-name text file, then import all names together. Age group and DOB can be added later.</p>
+          <input id="bulk-player-file" type="file" accept=".txt,.csv,text/plain,text/csv">
+          <button id="bulk-upload-btn" class="primary" type="button">Import Players</button>
+          <p id="bulk-upload-message" class="success" aria-live="polite"></p>
+        </div>
         <div class="toolbar"><input id="player-search" placeholder="Search player name..."><select id="group-filter"><option value="">All age groups</option><option>Under 10</option><option>Under 12</option><option>Under 14</option><option>Under 16</option><option>Under 19</option></select></div>
         <div class="table-wrap"><table><thead><tr><th>Player</th><th>Age group</th><th>Jersey No.</th><th>Parent contact</th><th class="coach-only">Action</th></tr></thead><tbody id="player-rows"></tbody></table></div>
         <p id="empty-players" class="empty">No players added yet. Select “Add Player” to begin.</p>
@@ -73,7 +79,7 @@
         <div class="toolbar"><input id="attendance-date" type="date"><select id="attendance-group"><option value="">All age groups</option><option>Under 10</option><option>Under 12</option><option>Under 14</option><option>Under 16</option><option>Under 19</option></select></div>
         <div id="attendance-list" class="attendance-list"></div>
         <button id="save-attendance" class="primary coach-only">Save Attendance</button>
-        <p id="attendance-message" class="success"></p><div class="notice coach-only"><b>Fees register</b><p>Fees tracking is planned for the next connected version. Do not record real payment data in this offline demo.</p></div>
+        <p id="attendance-message" class="success"></p>
       </section>
 
       <section id="matches-page" class="page hidden">
@@ -82,18 +88,9 @@
         <div class="match-card"><span class="match-icon">🏆</span><div><b>Xpress Cricket Academy</b><small>One Team, One Dream</small></div><span class="tag">Academy</span></div>
       </section>
 
-      <section id="parent-accounts-page" class="page hidden">
-        <div class="section-head"><div><p class="eyebrow">FAMILY ACCESS</p><h3>Parent Accounts</h3></div></div>
-        <div class="notice"><b>Demo account setup</b><p>Create a parent login and link it to one player. In this prototype, accounts are stored only in this browser. Do not use real passwords or sensitive information until secure cloud authentication is connected.</p></div>
-        <div class="toolbar"><select id="parent-player"></select><input id="parent-name" placeholder="Parent name"><input id="parent-mobile" placeholder="Mobile number"><input id="parent-pass" placeholder="Temporary password"></div>
-        <button id="create-parent" class="primary">Create Parent Account</button>
-        <div class="table-wrap" style="margin-top:18px"><table><thead><tr><th>Parent</th><th>Login ID</th><th>Linked Player</th></tr></thead><tbody id="parent-rows"></tbody></table></div>
-      </section>
       <section id="performance-page" class="page hidden">
         <div class="section-head"><div><p class="eyebrow">PLAYER DEVELOPMENT</p><h3>Performance</h3></div></div>
-        <div class="notice"><b>Performance tracking</b><p>Coach can record basic batting and bowling figures. Parents can view only their linked player's figures.</p></div>
-        <div class="toolbar coach-only"><select id="performance-player"></select><input id="runs-input" type="number" min="0" placeholder="Runs"><input id="wickets-input" type="number" min="0" placeholder="Wickets"><button id="save-performance" class="primary">Save figures</button></div>
-        <div id="performance-records" class="table-wrap"></div>
+        <div class="notice"><b>Performance tracking</b><p>Player batting, bowling, fielding and fitness records can be added here. This starter app provides the player roster and attendance foundation first.</p></div>
         <div class="performance-grid"><div class="performance-tile">🏏<b>Batting</b><small>Runs · Average · Strike rate</small></div><div class="performance-tile">🎯<b>Bowling</b><small>Wickets · Economy · Average</small></div><div class="performance-tile">⚡<b>Fitness</b><small>Speed · Agility · Endurance</small></div></div>
       </section>
     </main>
