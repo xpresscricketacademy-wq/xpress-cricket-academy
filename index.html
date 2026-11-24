@@ -11,8 +11,21 @@
 <div class="brand-mark"><img src="xpress-logo.png" alt="Xpress logo" onerror="this.style.display='none'"><span>🏏</span></div>
 <p class="eyebrow">ONE TEAM, ONE DREAM</p><h1>XPRESS CRICKET<br><em>ACADEMY</em></h1><p class="muted">Academy Management</p>
 <label for="role">Login as</label><select id="role"><option value="coach">Coach / Admin</option><option value="parent">Parent</option></select>
-<label for="passcode">Demo passcode</label><input id="passcode" type="password" placeholder="Enter demo passcode" autocomplete="current-password">
-<button id="login-btn" class="primary">Login</button><p class="hint">Demo access: Coach <b>1234</b> · Parent <b>1111</b></p><p id="login-error" class="error" aria-live="polite"></p>
+<label for="auth-email">Email address</label><input id="auth-email" type="email" placeholder="Enter email" autocomplete="username" required>
+<label for="auth-password">Password</label><input id="auth-password" type="password" placeholder="Enter password" autocomplete="current-password" required minlength="8">
+<button id="login-btn" class="primary">Login</button>
+<button id="show-register" class="secondary hidden" type="button">New Parent? Register here</button>
+<div id="register-panel" class="hidden">
+  <p class="eyebrow">PARENT REGISTRATION</p>
+  <label for="reg-student">Child name *</label><input id="reg-student" maxlength="80" required>
+  <label for="reg-dob">Date of birth *</label><input id="reg-dob" type="date" required>
+  <label for="reg-parent">Parent name *</label><input id="reg-parent" maxlength="80" required>
+  <label for="reg-mobile">Parent mobile *</label><input id="reg-mobile" type="tel" inputmode="numeric" maxlength="15" required>
+  <label for="reg-group">Age group *</label><select id="reg-group"><option value="">Select age group</option><option>Under 10</option><option>Under 12</option><option>Under 14</option><option>Under 16</option><option>Under 19</option></select>
+  <label for="reg-photo">Child photo (optional)</label><input id="reg-photo" type="file" accept="image/*">
+  <button id="register-btn" class="primary" type="button">Submit Registration</button>
+</div>
+<p class="hint">Parents can log in after Coach approval. Use your registered email and password.</p><p id="login-error" class="error" aria-live="polite"></p>
 </div></div>
 <div id="app" class="app hidden">
 <aside class="sidebar"><div class="side-brand"><div class="mini-logo">🏏</div><div><b>XPRESS</b><small>CRICKET ACADEMY</small></div></div>
@@ -22,14 +35,23 @@
 <button data-page="attendance" class="nav-item">✓ <span>Attendance</span></button>
 <button data-page="matches" class="nav-item">🏆 <span>Matches</span></button>
 <button data-page="performance" class="nav-item">↗ <span>Performance</span></button>
-<button data-page="parent-accounts" class="nav-item coach-only">♧ <span>Parent Accounts</span></button>
+<button data-page="approvals" class="nav-item coach-only">✓ <span>Registrations</span></button>
 </nav><button id="logout-btn" class="logout">↪ Logout</button></aside>
 <main class="main"><header class="topbar"><div><p class="eyebrow">WELCOME TO YOUR ACADEMY</p><h2 id="page-title">Dashboard</h2></div><div class="user-pill"><span class="online-dot"></span><span id="role-label">Coach / Admin</span></div></header>
+<section id="parent-dashboard-page" class="page hidden">
+<div class="section-head"><div><p class="eyebrow">FAMILY ACCESS</p><h3>My Child</h3></div></div>
+<div id="my-child-details" class="notice">Loading your child's details...</div>
+</section>
+<section id="approvals-page" class="page hidden">
+<div class="section-head"><div><p class="eyebrow">PARENT REGISTRATION</p><h3>Pending / Approved Requests</h3></div><button id="refresh-approvals" class="primary" type="button">Refresh</button></div>
+<div id="approval-list" class="table-wrap"></div>
+<p id="approval-message" class="success"></p>
+</section>
 <section id="dashboard-page" class="page">
 <div class="hero"><div><p class="eyebrow">ONE TEAM, ONE DREAM</p><h2>Train hard.<br><em>Play smart.</em></h2><p>Every player. Every practice. Every achievement.</p></div><div class="hero-ball">🏏</div></div>
 <div class="stats"><article class="stat"><span>Total Players</span><strong id="total-players">0</strong><small>Registered players</small></article><article class="stat"><span>Age Groups</span><strong>5</strong><small>U10 to U19</small></article><article class="stat"><span>Today's Attendance</span><strong id="today-count">0</strong><small>Marked present</small></article></div>
 <div class="section-head"><div><p class="eyebrow">ACADEMY ROSTER</p><h3>Age Groups</h3></div></div><div id="group-cards" class="group-grid"></div>
-<div class="notice"><b>Getting started</b><p>Add players from the Players section. This starter version stores demo data on this device only.</p></div>
+<div class="notice"><b>Getting started</b><p>Add players from the Players section. Parent registrations and approval status are managed through Supabase.</p></div>
 </section>
 <section id="players-page" class="page hidden">
 <div class="section-head"><div><p class="eyebrow">PLAYER DIRECTORY</p><h3>Academy Players</h3></div><button id="add-player-open" class="primary coach-only">+ Add Player</button></div>
@@ -45,11 +67,12 @@
 <div class="toolbar"><input id="attendance-date" type="date"><select id="attendance-group"><option value="">All age groups</option><option>Under 10</option><option>Under 12</option><option>Under 14</option><option>Under 16</option><option>Under 19</option></select></div>
 <div id="attendance-list" class="attendance-list"></div><button id="save-attendance" class="primary coach-only">Save Attendance</button><p id="attendance-message" class="success"></p></section>
 <section id="matches-page" class="page hidden"><div class="section-head"><div><p class="eyebrow">FIXTURES & RESULTS</p><h3>Matches</h3></div></div><div class="notice"><b>Match centre</b><p>Fixtures and results section.</p></div></section>
-<section id="parent-accounts-page" class="page hidden"><div class="section-head"><div><p class="eyebrow">FAMILY ACCESS</p><h3>Parent Accounts</h3></div></div><div class="toolbar"><select id="parent-player"></select><input id="parent-name" placeholder="Parent name"><input id="parent-mobile" placeholder="Mobile number"><input id="parent-pass" placeholder="Temporary password"></div><button id="create-parent" class="primary">Create Parent Account</button><table><tbody id="parent-rows"></tbody></table></section>
+
 <section id="performance-page" class="page hidden"><div class="section-head"><div><p class="eyebrow">PLAYER DEVELOPMENT</p><h3>Performance</h3></div></div><div class="toolbar coach-only"><select id="performance-player"></select><input id="runs-input" type="number" placeholder="Runs"><input id="wickets-input" type="number" placeholder="Wickets"><button id="save-performance" class="primary">Save figures</button></div><div id="performance-records" class="table-wrap"></div></section>
 </main></div>
 <dialog id="player-dialog"><form id="player-form" method="dialog"><div class="dialog-head"><div><p class="eyebrow">ACADEMY ROSTER</p><h3>Add New Player</h3></div><button type="button" id="close-dialog" class="close">×</button></div>
 <label>Player name *</label><input id="new-name" required maxlength="60" placeholder="Enter full name"><label>Age group</label><select id="new-group"><option value="">Not assigned yet</option><option>Under 10</option><option>Under 12</option><option>Under 14</option><option>Under 16</option><option>Under 19</option></select>
 <label>Jersey number</label><input id="new-jersey" type="number" min="0" max="999"><label>Parent contact</label><input id="new-contact" type="tel"><button class="primary" type="submit">Save Player</button></form></dialog>
-<script src="app.js?v=1.6"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="app.js?v=2.1"></script>
 </body></html>

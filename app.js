@@ -3,59 +3,172 @@ const GROUPS = ["Under 10", "Under 12", "Under 14", "Under 16", "Under 19"];
 
 let players = JSON.parse(localStorage.getItem("xpress_players") || "[]");
 let attendance = JSON.parse(localStorage.getItem("xpress_attendance") || "{}");
-let parentAccounts = JSON.parse(localStorage.getItem("xpress_parent_accounts") || "[]");
 let performance = JSON.parse(localStorage.getItem("xpress_performance") || "{}");
-let activeParent = null;
 let currentRole = "coach";
 
 const savePlayers = () => localStorage.setItem("xpress_players", JSON.stringify(players));
 
-function login() {
-  const role = $("#role").value;
-  const pass = $("#passcode").value;
+// Supabase configuration for Xpress Cricket Academy.
+const SUPABASE_URL = "https://ayrixcmsfkxqweizwlyv.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_s3JLAtdLjX6q0X_PGoTb2Q_V2xy91G9";
+const COACH_EMAIL = "xpressacademy@gmail.com";
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let authUser = null;
+let cloudStudent = null;
 
-  if (role === "coach" && pass === "1234") {
-    currentRole = "coach";
-    activeParent = null;
-  } else if (role === "parent") {
-    const acct = parentAccounts.find(a => a.password === pass);
-    if (acct) {
-      currentRole = "parent";
-      activeParent = acct;
-    } else if (pass === "1111" && parentAccounts.length === 0) {
-      currentRole = "parent";
-      activeParent = null;
-    } else {
-      $("#login-error").textContent = "Parent login not found. Ask the coach to create your account.";
-      return;
-    }
-  } else {
-    $("#login-error").textContent = "Incorrect demo passcode. Please try again.";
-    return;
-  }
-
-  $("#login-error").textContent = "";
+function showAuthError(message) {
+  $("#login-error").textContent = message;
+}
+function showApp(role) {
+  currentRole = role;
   $("#login-screen").classList.add("hidden");
   $("#app").classList.remove("hidden");
-  $("#role-label").textContent = currentRole === "coach" ? "Coach / Admin" : "Parent";
-  document.querySelectorAll('[data-page="parent-accounts"]').forEach(el =>
-    el.classList.toggle("hidden", currentRole !== "coach")
-  );
-  document.querySelectorAll(".coach-only").forEach(el =>
-    el.classList.toggle("hidden", currentRole !== "coach")
-  );
-  render();
+  $("#role-label").textContent = role === "coach" ? "Coach / Admin" : "Parent";
+  document.querySelectorAll(".coach-only").forEach(el => el.classList.toggle("hidden", role !== "coach"));
+  document.querySelectorAll('[data-page="parent-accounts"]').forEach(el => el.classList.toggle("hidden", role !== "coach"));
+  if (role === "parent") {
+    document.querySelectorAll(".nav-item").forEach(el => el.classList.add("hidden"));
+    $("#parent-dashboard-page").classList.remove("hidden");
+    $("#page-title").textContent = "My Child";
+    renderMyChild();
+  } else {
+    document.querySelectorAll(".nav-item").forEach(el => el.classList.remove("hidden"));
+    render();
+  }
 }
-
+async function login() {
+  const role = $("#role").value;
+  const email = $("#auth-email").value.trim().toLowerCase();
+  const password = $("#auth-password").value;
+  if (!email || !password) return showAuthError("Email and password are required.");
+  showAuthError("Signing in...");
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) return showAuthError(error.message);
+  authUser = data.user;
+  if (role === "coach") {
+    if (email !== COACH_EMAIL) {
+      await supabase.auth.signOut();
+      authUser = null;
+      return showAuthError("This email is not authorized as Coach.");
+    }
+    showApp("coach");
+    await loadApprovals();
+  } else {
+    if (email === COACH_EMAIL) {
+      await supabase.auth.signOut();
+      authUser = null;
+      return showAuthError("Please choose Coach / Admin.");
+    }
+    const { data: rows, error: rowError } = await supabase
+      .from("Students").select("*").eq("parent_user_id", authUser.id).limit(1);
+    if (rowError) return showAuthError("Could not load registration: " + rowError.message);
+    cloudStudent = rows && rows[0] ? rows[0] : null;
+    if (!cloudStudent) {
+      await supabase.auth.signOut();
+      authUser = null;
+      return showAuthError("No child registration found for this account. Please register first.");
+    }
+    if (String(cloudStudent.Approval_status).toLowerCase() !== "approved") {
+      await supabase.auth.signOut();
+      authUser = null;
+      return showAuthError("Your registration is pending Coach approval. Please try again after approval.");
+    }
+    showApp("parent");
+  }
+}
 $("#login-btn").addEventListener("click", login);
-$("#passcode").addEventListener("keydown", e => {
-  if (e.key === "Enter") login();
+$("#auth-password").addEventListener("keydown", e => { if (e.key === "Enter") login(); });
+$("#role").addEventListener("change", () => {
+  $("#show-register").classList.toggle("hidden", $("#role").value !== "parent");
 });
-$("#logout-btn").addEventListener("click", () => {
+$("#show-register").addEventListener("click", () => $("#register-panel").classList.toggle("hidden"));
+$("#register-btn").addEventListener("click", async () => {
+  const email = $("#auth-email").value.trim().toLowerCase();
+  const password = $("#auth-password").value;
+  const student = $("#reg-student").value.trim();
+  const dob = $("#reg-dob").value;
+  const parent = $("#reg-parent").value.trim();
+  const mobile = $("#reg-mobile").value.trim();
+  const group = $("#reg-group").value;
+  const photo = $("#reg-photo").files[0];
+  if (!email || password.length < 8 || !student || !dob || !parent || !mobile || !group) {
+    return showAuthError("Fill all required fields. Password must be at least 8 characters.");
+  }
+  if (email === COACH_EMAIL) return showAuthError("Please use a parent email address.");
+  showAuthError("Submitting registration...");
+  const { data, error } = await supabase.auth.signUp({ email, password });
+  if (error) return showAuthError(error.message);
+  if (!data.user) return showAuthError("Account could not be created. Please try again.");
+  let photoPath = null;
+  if (photo) {
+    if (!photo.type.startsWith("image/") || photo.size > 5 * 1024 * 1024) {
+      return showAuthError("Photo must be an image smaller than 5 MB.");
+    }
+    const ext = (photo.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "");
+    photoPath = `${data.user.id}/${Date.now()}.${ext}`;
+    const { error: uploadError } = await supabase.storage.from("student-photos").upload(photoPath, photo, { upsert: false });
+    if (uploadError) {
+        await supabase.auth.signOut();
+        authUser = null;
+        return showAuthError("Account created, but photo upload failed: " + uploadError.message);
+      }
+  }
+  const payload = {
+    parent_user_id: data.user.id,
+    Student_name: student,
+    Date_of_birth: dob,
+    Parent_name: parent,
+    Parent_mobile: mobile,
+    Age_group: group,
+    Photo_url: photoPath,
+    Approval_status: "Pending"
+  };
+  const { error: insertError } = await supabase.from("Students").insert(payload);
+  if (insertError) return showAuthError("Account created, but student registration failed: " + insertError.message);
+  showAuthError("Registration submitted. Coach approval is required before login.");
+  $("#register-panel").classList.add("hidden");
+});
+$("#logout-btn").addEventListener("click", async () => {
+  await supabase.auth.signOut();
+  authUser = null; cloudStudent = null;
   $("#app").classList.add("hidden");
   $("#login-screen").classList.remove("hidden");
-  $("#passcode").value = "";
+  $("#auth-password").value = "";
 });
+$("#refresh-approvals")?.addEventListener("click", loadApprovals);
+
+async function renderMyChild() {
+  if (!cloudStudent) return;
+  let photoMarkup = "";
+  if (cloudStudent.Photo_url) {
+    const { data } = await supabase.storage.from("student-photos").createSignedUrl(cloudStudent.Photo_url, 3600);
+    if (data?.signedUrl) photoMarkup = `<p><img src="${data.signedUrl}" alt="Child photo" style="max-width:150px;border-radius:12px"></p>`;
+  }
+  $("#my-child-details").innerHTML = `${photoMarkup}<b>${escapeHtml(cloudStudent.Student_name)}</b>
+    <p>Date of birth: ${escapeHtml(cloudStudent.Date_of_birth || "—")}</p>
+    <p>Age group: ${escapeHtml(cloudStudent.Age_group || "—")}</p>
+    <p>Parent: ${escapeHtml(cloudStudent.Parent_name || "—")}</p>
+    <p>Parent mobile: ${escapeHtml(cloudStudent.Parent_mobile || "—")}</p>
+    <p>Registration status: ${escapeHtml(cloudStudent.Approval_status || "Pending")}</p>`;
+}
+async function loadApprovals() {
+  const target = $("#approval-list");
+  if (!target || currentRole !== "coach") return;
+  target.textContent = "Loading registrations...";
+  const { data, error } = await supabase.from("Students").select("*").order("created_at", { ascending: false });
+  if (error) { target.textContent = "Could not load registrations: " + error.message; return; }
+  if (!data.length) { target.textContent = "No registrations yet."; return; }
+  target.innerHTML = `<table><thead><tr><th>Child</th><th>DOB</th><th>Parent</th><th>Mobile</th><th>Age group</th><th>Status</th><th>Action</th></tr></thead><tbody>${
+    data.map(s => `<tr><td>${escapeHtml(s.Student_name || "")}</td><td>${escapeHtml(s.Date_of_birth || "")}</td><td>${escapeHtml(s.Parent_name || "")}</td><td>${escapeHtml(s.Parent_mobile || "")}</td><td>${escapeHtml(s.Age_group || "")}</td><td>${escapeHtml(s.Approval_status || "Pending")}</td><td>${String(s.Approval_status).toLowerCase() === "pending" ? `<button class="primary" data-approve="${s.id}">Approve</button> <button class="secondary" data-reject="${s.id}">Reject</button>` : "—"}</td></tr>`).join("")
+  }</tbody></table>`;
+  target.querySelectorAll("[data-approve]").forEach(btn => btn.addEventListener("click", () => setApproval(btn.dataset.approve, "Approved")));
+  target.querySelectorAll("[data-reject]").forEach(btn => btn.addEventListener("click", () => setApproval(btn.dataset.reject, "Rejected")));
+}
+async function setApproval(id, status) {
+  const { error } = await supabase.from("Students").update({ Approval_status: status }).eq("id", id);
+  $("#approval-message").textContent = error ? error.message : `Registration ${status.toLowerCase()}.`;
+  await loadApprovals();
+}
 
 document.querySelectorAll(".nav-item").forEach(btn =>
   btn.addEventListener("click", () => showPage(btn.dataset.page))
@@ -71,7 +184,7 @@ function showPage(page) {
   $("#page-title").textContent = page[0].toUpperCase() + page.slice(1);
   if (page === "players") renderPlayers();
   if (page === "attendance") renderAttendance();
-  if (page === "parent-accounts") renderParentAccounts();
+  if (page === "approvals") loadApprovals();
   if (page === "performance") renderPerformance();
 }
 
@@ -169,9 +282,7 @@ if (bulkButton) {
 function renderPlayers() {
   const q = $("#player-search").value.toLowerCase();
   const g = $("#group-filter").value;
-  const allowed = currentRole === "parent" && activeParent ? [activeParent.playerId] : null;
   const list = players.filter(p =>
-    (!allowed || allowed.includes(p.id)) &&
     p.name.toLowerCase().includes(q) &&
     (!g || p.group === g)
   );
@@ -207,7 +318,6 @@ function renderAttendance() {
   const key = date + "|";
   const saved = attendance[key] || {};
   const list = players.filter(p =>
-    (currentRole !== "parent" || !activeParent || p.id === activeParent.playerId) &&
     (!g || p.group === g)
   );
   $("#attendance-list").innerHTML = list.length
@@ -240,40 +350,8 @@ if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
 }
 
-function renderParentAccounts() {
-  const sel = $("#parent-player");
-  if (!sel) return;
-  sel.innerHTML = players.map(p =>
-    `<option value="${p.id}">${escapeHtml(p.name)} (${escapeHtml(p.group || "Not assigned")})</option>`
-  ).join("");
-  $("#parent-rows").innerHTML = parentAccounts.map(a => {
-    const p = players.find(x => x.id === a.playerId);
-    return `<tr><td>${escapeHtml(a.name)}</td><td>${escapeHtml(a.mobile)}</td><td>${p ? escapeHtml(p.name) : "Player removed"}</td></tr>`;
-  }).join("");
-}
-
-$("#create-parent")?.addEventListener("click", () => {
-  const playerId = Number($("#parent-player").value);
-  const name = $("#parent-name").value.trim();
-  const mobile = $("#parent-mobile").value.trim();
-  const password = $("#parent-pass").value;
-  if (!playerId || !name || !mobile || password.length < 4) {
-    alert("Select a player and enter parent name, mobile and a password of at least 4 characters.");
-    return;
-  }
-  parentAccounts.push({ id: Date.now(), playerId, name, mobile, password });
-  localStorage.setItem("xpress_parent_accounts", JSON.stringify(parentAccounts));
-  $("#parent-name").value = "";
-  $("#parent-mobile").value = "";
-  $("#parent-pass").value = "";
-  renderParentAccounts();
-  alert("Demo parent account created. Login ID is the mobile number; demo login currently uses the password field.");
-});
-
 function renderPerformance() {
-  const ids = currentRole === "parent" && activeParent
-    ? [activeParent.playerId]
-    : players.map(p => p.id);
+  const ids = players.map(p => p.id);
   const records = ids.map(id => {
     const p = players.find(x => x.id === id);
     const v = performance[id] || {};
