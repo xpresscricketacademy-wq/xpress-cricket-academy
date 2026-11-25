@@ -19,6 +19,7 @@ const SUPABASE_URL = "https://ayrixcmsfkxqweizwlyv.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_s3JLAtdLjX6q0X_PGoTb2Q_V2xy91G9";
 const COACH_EMAIL = "xpresscricketacademy@gmail.com"; 
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+alert("Xpress App JavaScript Loaded");
 let authUser = null;
 let cloudStudent = null;
 
