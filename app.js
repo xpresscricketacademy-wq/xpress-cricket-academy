@@ -1,7 +1,7 @@
 window.addEventListener("error", function(e) {
   const box = document.querySelector("#login-error");
   if (box) box.textContent = "App Error: " + e.message + " (Line " + e.lineno + ")";
-});
+}); 
 const $ = s => document.querySelector(s);
 const GROUPS = ["Under 10", "Under 12", "Under 14", "Under 16", "Under 19"];
 
