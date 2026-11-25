@@ -1,4 +1,4 @@
-window.addEventListener("error", function(e) {
+alert("JavaScript Working"); window.addEventListener("error", function(e) {
   const box = document.querySelector("#login-error");
   if (box) box.textContent = "App Error: " + e.message + " (Line " + e.lineno + ")";
 }); 
