@@ -282,7 +282,10 @@ if (bulkButton) {
 function renderPlayers() {
   const q = $("#player-search").value.toLowerCase();
   const g = $("#group-filter").value;
-  const allowed = currentRole === "parent" && activeParent ? [activeParent.playerId] : null;
+
+  const allowed = currentRole === "parent" && activeParent
+    ? [activeParent.playerId] : null;
+
   const list = players.filter(p =>
     (!allowed || allowed.includes(p.id)) &&
     p.name.toLowerCase().includes(q) &&
@@ -290,10 +293,39 @@ function renderPlayers() {
   );
 
   $("#player-rows").innerHTML = list.map(p =>
-    `<tr><td class="player-name">${escapeHtml(p.name)}</td><td>${escapeHtml(p.group || "Not assigned")}</td><td>${p.jersey || "—"}</td><td>${escapeHtml(p.contact || "—")}</td><td class="coach-only"><button data-delete="${p.id}" class="delete-btn">Remove</button></td></tr>`
+    `<tr>
+      <td class="player-name">${escapeHtml(p.name)}</td>
+      <td>
+        ${currentRole === "coach"
+          ? `<select class="group-select" data-group="${p.id}">
+              <option value="">Select Age Group</option>
+              ${GROUPS.map(g =>
+                <option value="${g}" ${p.group === g ? "selected" : ""}>${g}</option>
+              ).join("")}
+            </select>`
+          : escapeHtml(p.group || "Not assigned")}
+      </td>
+      <td>${p.jersey || "—"}</td>
+      <td>${escapeHtml(p.contact || "—")}</td>
+      <td class="coach-only">
+        <button data-delete="${p.id}" class="delete-btn">Remove</button>
+      </td>
+    </tr>`
   ).join("");
 
   $("#empty-players").classList.toggle("hidden", list.length > 0);
+
+  document.querySelectorAll(".group-select").forEach(select => {
+    select.addEventListener("change", () => {
+      const player = players.find(p => p.id === Number(select.dataset.group));
+      if (!player) return;
+
+      player.group = select.value;
+      savePlayers();
+      render();
+    });
+  });
+
   document.querySelectorAll("[data-delete]").forEach(b =>
     b.addEventListener("click", () => {
       if (confirm("Remove this player?")) {
@@ -303,6 +335,7 @@ function renderPlayers() {
       }
     })
   );
+
   document.querySelectorAll(".coach-only").forEach(el =>
     el.classList.toggle("hidden", currentRole !== "coach")
   );
