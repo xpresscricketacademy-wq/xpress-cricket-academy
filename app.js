@@ -384,7 +384,7 @@ $("#fees-list").insertAdjacentHTML("beforeend", `
     <p>Fee Exempt: ${exempt}</p>
     <h3>Total Collection: ₹${total.toLocaleString("en-IN")}</h3>
   </div>
-`);
+`); 
   document.querySelectorAll("[data-fee]").forEach(btn => {
     btn.addEventListener("click", () => {
       const data = JSON.parse(localStorage.getItem("xpress_fees") || "{}");
