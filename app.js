@@ -296,14 +296,14 @@ function renderPlayers() {
     `<tr>
       <td class="player-name">${escapeHtml(p.name)}</td>
       <td>
-        ${currentRole === "coach"
-          ? `<select class="group-select" data-group="${p.id}">
-              <option value="">Select Age Group</option>
-              ${GROUPS.map(g =>
-                <option value="${g}" ${p.group === g ? "selected" : ""}>${g}</option>
-              ).join("")}
-            </select>`
-          : escapeHtml(p.group || "Not assigned")}
+       ${currentRole === "coach"
+  ? '<select class="group-select" data-group="' + p.id + '">' +
+    '<option value="">Select Age Group</option>' +
+    GROUPS.map(g => '<option value="' + g + '"' +
+      (p.group === g ? ' selected' : '') + '>' + g + '</option>'
+    ).join("") +
+    '</select>'
+  : escapeHtml(p.group || "Not assigned")}
       </td>
       <td>${p.jersey || "—"}</td>
       <td>${escapeHtml(p.contact || "—")}</td>
