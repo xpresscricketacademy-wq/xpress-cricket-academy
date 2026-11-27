@@ -348,11 +348,11 @@ function renderFees() {
   const year = $("#fees-year").value;
   const records = JSON.parse(localStorage.getItem("xpress_fees") || "{}");
   const key = year + "-" + month;
-
+const paymentModes = JSON.parse(localStorage.getItem("xpress_fee_modes") || "{}");
   $("#fees-list").innerHTML = `
     <table>
       <thead><tr>
-        <th>Player</th><th>Monthly Fee</th><th>Status</th><th>Action</th>
+        <th>Player</th><th>Monthly Fee</th><th>Status</th><th>Payment Mode</th><th>Action</th>
       </tr></thead>
       <tbody>
         ${players.map(p => {
@@ -361,6 +361,7 @@ function renderFees() {
             <td>${escapeHtml(p.name)}</td>
             <td>₹${fee === "Exempt" ? 0 : 1000}</td>
             <td>${fee}</td>
+            <td>${paymentModes[key]?.[p.id] || "—"}</td>
             <td>
               <button data-fee="${p.id}" data-status="Paid">Paid</button>
               <button data-fee="${p.id}" data-status="Unpaid">Unpaid</button>
@@ -386,14 +387,46 @@ $("#fees-list").insertAdjacentHTML("beforeend", `
   </div>
 `); 
   document.querySelectorAll("[data-fee]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const data = JSON.parse(localStorage.getItem("xpress_fees") || "{}");
-      data[key] = data[key] || {};
-      data[key][btn.dataset.fee] = btn.dataset.status;
-      localStorage.setItem("xpress_fees", JSON.stringify(data));
-      renderFees();
-    });
+  btn.addEventListener("click", () => {
+    const status = btn.dataset.status;
+    let mode = "";
+
+    if (status === "Paid") {
+      const choice = prompt(
+        "Payment Mode:\n1. Cash\n2. GPay / UPI\n3. Bank Transfer\nEnter 1, 2 or 3:"
+      );
+
+      const modes = {
+        "1": "Cash",
+        "2": "GPay / UPI",
+        "3": "Bank Transfer"
+      };
+
+      mode = modes[choice];
+      if (!mode) {
+        alert("Please select a valid payment mode.");
+        return;
+      }
+    }
+
+    const data = JSON.parse(localStorage.getItem("xpress_fees") || "{}");
+    data[key] = data[key] || {};
+    data[key][btn.dataset.fee] = status;
+    localStorage.setItem("xpress_fees", JSON.stringify(data));
+
+    const paymentModes = JSON.parse(localStorage.getItem("xpress_fee_modes") || "{}");
+    paymentModes[key] = paymentModes[key] || {};
+
+    if (status === "Paid") {
+      paymentModes[key][btn.dataset.fee] = mode;
+    } else {
+      delete paymentModes[key][btn.dataset.fee];
+    }
+
+    localStorage.setItem("xpress_fee_modes", JSON.stringify(paymentModes));
+    renderFees();
   });
+});
 }
 
 $("#fees-month").addEventListener("change", renderFees);
