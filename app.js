@@ -341,7 +341,7 @@ function renderPlayers() {
   );
 }
 
-$("#").addEventListener("input", renderPlayers);
+$("#player-search").addEventListener("input", renderPlayers);
 $("#group-filter").addEventListener("change", renderPlayers);
 function renderFees() {
   const month = $("#fees-month").value;
