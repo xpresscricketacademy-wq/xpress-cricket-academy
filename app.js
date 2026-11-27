@@ -386,6 +386,49 @@ $("#fees-list").insertAdjacentHTML("beforeend", `
     <h3>Total Collection: ₹${total.toLocaleString("en-IN")}</h3>
   </div>
 `); 
+const exportBtn = document.createElement("button");
+exportBtn.textContent = "Download Excel Report";
+
+exportBtn.addEventListener("click", () => {
+  const rows = [
+    ["Player Name", "Monthly Fee", "Payment Status", "Payment Mode"]
+  ];
+
+  players.forEach(p => {
+    const status = records[key]?.[p.id] || "Unpaid";
+    const amount = status === "Exempt" ? 0 : 1000;
+    const mode = status === "Paid"
+      ? (paymentModes[key]?.[p.id] || "-")
+      : "-";
+
+    rows.push([p.name, amount, status, mode]);
+  });
+
+  const paid = players.filter(
+    p => records[key]?.[p.id] === "Paid"
+  ).length;
+
+  rows.push(["Total Collection", paid * 1000, "", ""]);
+
+  const csv = "\uFEFF" + rows.map(row =>
+    row.map(value =>
+      "${String(value).replace(/"/g, '""')}"
+    ).join(",")
+  ).join("\r\n");
+
+  const blob = new Blob([csv], {
+    type: "text/csv;charset=utf-8;"
+  });
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = Xpress_Fee_Report_${year}_${month}.csv;
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+$("#fees-list").prepend(exportBtn);
   document.querySelectorAll("[data-fee]").forEach(btn => {
   btn.addEventListener("click", () => {
     const status = btn.dataset.status;
