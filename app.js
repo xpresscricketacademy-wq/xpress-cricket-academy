@@ -186,7 +186,7 @@ function showPage(page) {
   if (page === "parent-accounts") renderParentAccounts();
   if (page === "approvals") loadApprovals();
   if (page === "performance") renderPerformance();
-}
+if (page === "fees") renderFees(); }
 
 function render() {
   $("#total-players").textContent = players.length;
@@ -280,7 +280,7 @@ if (bulkButton) {
 }
 
 function renderPlayers() {
-  const q = $("#player-search").value.toLowerCase();
+  const q = $("#").value.toLowerCase();
   const g = $("#group-filter").value;
 
   const allowed = currentRole === "parent" && activeParent
@@ -341,9 +341,49 @@ function renderPlayers() {
   );
 }
 
-$("#player-search").addEventListener("input", renderPlayers);
+$("#").addEventListener("input", renderPlayers);
 $("#group-filter").addEventListener("change", renderPlayers);
+function renderFees() {
+  const month = $("#fees-month").value;
+  const year = $("#fees-year").value;
+  const records = JSON.parse(localStorage.getItem("xpress_fees") || "{}");
+  const key = year + "-" + month;
 
+  $("#fees-list").innerHTML = `
+    <table>
+      <thead><tr>
+        <th>Player</th><th>Monthly Fee</th><th>Status</th><th>Action</th>
+      </tr></thead>
+      <tbody>
+        ${players.map(p => {
+          const fee = records[key]?.[p.id] || "Unpaid";
+          return `<tr>
+            <td>${escapeHtml(p.name)}</td>
+            <td>₹${fee === "Exempt" ? 0 : 1000}</td>
+            <td>${fee}</td>
+            <td>
+              <button data-fee="${p.id}" data-status="Paid">Paid</button>
+              <button data-fee="${p.id}" data-status="Unpaid">Unpaid</button>
+              <button data-fee="${p.id}" data-status="Exempt">Fee Exempt</button>
+            </td>
+          </tr>`;
+        }).join("")}
+      </tbody>
+    </table>`;
+
+  document.querySelectorAll("[data-fee]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const data = JSON.parse(localStorage.getItem("xpress_fees") || "{}");
+      data[key] = data[key] || {};
+      data[key][btn.dataset.fee] = btn.dataset.status;
+      localStorage.setItem("xpress_fees", JSON.stringify(data));
+      renderFees();
+    });
+  });
+}
+
+$("#fees-month").addEventListener("change", renderFees);
+$("#fees-year").addEventListener("change", renderFees);
 function renderAttendance() {
   if (!$("#attendance-date").value) {
     $("#attendance-date").value = new Date().toISOString().slice(0, 10);
