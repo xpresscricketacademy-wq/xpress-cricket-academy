@@ -387,8 +387,9 @@ $("#fees-list").insertAdjacentHTML("beforeend", `
   </div>
 `); 
 const exportBtn = document.createElement("button");
+  
 exportBtn.textContent = "Download Excel Report";
-
+$("#fees-list").prepend(exportBtn);
 exportBtn.addEventListener("click", () => {
   const rows = [
     ["Player Name", "Monthly Fee", "Payment Status", "Payment Mode"]
