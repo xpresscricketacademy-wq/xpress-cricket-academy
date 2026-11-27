@@ -65,7 +65,32 @@
 <div class="table-wrap"><table><thead><tr><th>Player</th><th>Age group</th><th>Jersey No.</th><th>Parent contact</th><th class="coach-only">Action</th></tr></thead><tbody id="player-rows"></tbody></table></div>
 <p id="empty-players" class="empty">No players added yet. Use Bulk add players or Add Player.</p>
 </section>
-<section id="attendance-page" class="page hidden"><div class="section-head"><div><p class="eyebrow">DAILY TRAINING</p><h3>Attendance</h3></div></div>
+<section id="fees-page" class="page hidden">
+  <div class="section-head">
+    <div>
+      <p class="eyebrow">MONTHLY PAYMENT</p>
+      <h3>Fees Collection</h3>
+    </div>
+  </div>
+  <div class="toolbar">
+    <select id="fees-month">
+      <option value="January">January</option>
+      <option value="February">February</option>
+      <option value="March">March</option>
+      <option value="April">April</option>
+      <option value="May">May</option>
+      <option value="June">June</option>
+      <option value="July">July</option>
+      <option value="August">August</option>
+      <option value="September">September</option>
+      <option value="October">October</option>
+      <option value="November">November</option>
+      <option value="December">December</option>
+    </select>
+    <input id="fees-year" type="number" value="2026">
+  </div>
+  <div id="fees-list" class="table-wrap"></div>
+</section> <section id="attendance-page" class="page hidden"><div class="section-head"><div><p class="eyebrow">DAILY TRAINING</p><h3>Attendance</h3></div></div>
 <div class="toolbar"><input id="attendance-date" type="date"><select id="attendance-group"><option value="">All age groups</option><option>Under 10</option><option>Under 12</option><option>Under 14</option><option>Under 16</option><option>Under 19</option></select></div>
 <div id="attendance-list" class="attendance-list"></div><button id="save-attendance" class="primary coach-only">Save Attendance</button><p id="attendance-message" class="success"></p></section>
 <section id="matches-page" class="page hidden"><div class="section-head"><div><p class="eyebrow">FIXTURES & RESULTS</p><h3>Matches</h3></div></div><div class="notice"><b>Match centre</b><p>Fixtures and results section.</p></div></section>
