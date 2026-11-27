@@ -280,7 +280,7 @@ if (bulkButton) {
 }
 
 function renderPlayers() {
-  const q = $("#").value.toLowerCase();
+  const q = $("#player-search").value.toLowerCase();
   const g = $("#group-filter").value;
 
   const allowed = currentRole === "parent" && activeParent
