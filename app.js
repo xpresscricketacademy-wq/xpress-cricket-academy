@@ -394,7 +394,7 @@ $("#fees-list").insertAdjacentHTML("beforeend", `
     if (status === "Paid") {
       const choice = prompt(
         "Payment Mode:\n1. Cash\n2. GPay / UPI\n3. Bank Transfer\nEnter 1, 2 or 3:"
-      );
+      ); 
 
       const modes = {
         "1": "Cash",
