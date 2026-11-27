@@ -370,7 +370,21 @@ function renderFees() {
         }).join("")}
       </tbody>
     </table>`;
+const statuses = players.map(p => records[key]?.[p.id] || "Unpaid");
+const paid = statuses.filter(s => s === "Paid").length;
+const unpaid = statuses.filter(s => s === "Unpaid").length;
+const exempt = statuses.filter(s => s === "Exempt").length;
+const total = paid * 1000;
 
+$("#fees-list").insertAdjacentHTML("beforeend", `
+  <div class="fee-report">
+    <h3>Monthly Fee Report</h3>
+    <p>Paid: ${paid}</p>
+    <p>Unpaid: ${unpaid}</p>
+    <p>Fee Exempt: ${exempt}</p>
+    <h3>Total Collection: ₹${total.toLocaleString("en-IN")}</h3>
+  </div>
+`);
   document.querySelectorAll("[data-fee]").forEach(btn => {
     btn.addEventListener("click", () => {
       const data = JSON.parse(localStorage.getItem("xpress_fees") || "{}");
