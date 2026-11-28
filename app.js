@@ -413,7 +413,7 @@ exportBtn.addEventListener("click", () => {
 
   const csv = "\uFEFF" + rows.map(row =>
     row.map(value =>
-      "${String(value).replace(/"/g, '""')}"
+      `${String(value).replace(/"/g, '""')}`
     ).join(",")
   ).join("\r\n");
 
@@ -424,7 +424,7 @@ exportBtn.addEventListener("click", () => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = Xpress_Fee_Report_${year}_${month}.csv;
+  a.download = `Xpress_Fee_Report_${year}_${month}.csv;`
   a.click();
   URL.revokeObjectURL(url);
 });
